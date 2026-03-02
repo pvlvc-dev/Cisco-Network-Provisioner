@@ -1,0 +1,43 @@
+! Cisco IOS Access Switch Config
+
+en
+conf t
+hostname {{ hostname }}
+line con 0
+logging sync
+exec-time 0 0
+exit
+
+! --- Vlans ---
+{% for vlan in vlan_database %}
+vlan {{ vlan.id }}
+ name {{vlan.name}}
+{%- endfor %}
+
+! --- Management Interface ---
+
+interface vlan {{ mgmt_vlan }}
+ ip address {{ mgmt_ip }} {{ mgmt_mask }}
+ no shutdown
+
+ip default-gateway {{ default_gateway }}
+
+! --- Access Interfaces ---
+{% for interface in access_interfaces %}
+interface {{ interface.name }}
+ switchport mode access
+ switchport access vlan {{ interface.vlan }}
+ spanning-tree portfast
+{% endfor %}
+
+! --- Trunk Interfaces ---
+{% if trunk_interfaces -%}
+{%- for trunk in trunk_interfaces %}
+interface {{ trunk.name }}
+ switchport mode trunk
+ switchport trunk allowed vlan {{ trunk.vlans }}
+{% endfor -%}
+{% endif %}
+wr mem
+
+end
