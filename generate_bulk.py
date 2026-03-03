@@ -3,7 +3,11 @@ import csv
 from jinja2 import Environment, FileSystemLoader
 
 # Template env setup
-env = Environment(loader=FileSystemLoader('templates'))
+env = Environment(
+    loader=FileSystemLoader('templates'),
+    trim_blocks=True,
+    lstrip_blocks=True
+    )
 template = env.get_template('access_switch.j2')
 
 os.makedirs("outputs", exist_ok=True)
@@ -30,10 +34,10 @@ with open('data/switches.csv', mode='r') as file:
         raw_access = row['access_interfaces'].split(' ')
         structured_access = []
         for item in raw_access:
-            if_name, if_vlan = item.split(':')
+            a_int, a_vlan = item.split(':')
             structured_access.append({
-                "name": if_name,
-                "id": if_vlan
+                "name": a_int,
+                "id": a_vlan
             })
         row['access_interfaces'] = structured_access
         
@@ -43,9 +47,9 @@ with open('data/switches.csv', mode='r') as file:
         if row.get('trunk_interfaces'):
             raw_trunks = row['trunk_interfaces'].split(' ')
             for item in raw_trunks:
-                if_name, allowed_vlans = item.split(':')
+                t_int, allowed_vlans = item.split(':')
                 structured_trunks.append({
-                    "name": if_name,
+                    "name": t_int,
                     "vlans": allowed_vlans
                 })
         row['trunk_interfaces'] = structured_trunks
